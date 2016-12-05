@@ -53,3 +53,8 @@ void tinyrenderer::line(int x0, int y0, int x1, int y1, TGAImage &image, const T
         }
     }
 }
+
+void tinyrenderer::line(const datatypes::Vec2i& p0, const datatypes::Vec2i& p1, TGAImage &image, const TGAColor& color)
+{
+    line(p0.x, p0.y, p1.x, p1.y, image, color);
+}
