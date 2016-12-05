@@ -29,7 +29,7 @@ Wavefront::Wavefront(const std::string& filename)
             {
                 assert(tokens.size() == 4);
                 
-                Vec3f v;
+                datatypes::Vec3f v;
                 v.x = std::stof(tokens[1]);
                 v.y = std::stof(tokens[2]);
                 v.z = std::stof(tokens[3]);
@@ -61,7 +61,7 @@ Wavefront::Wavefront(const std::string& filename)
     }
 }
 
-Vec3f Wavefront::geometricVertex(int vertexIndex)
+datatypes::Vec3f Wavefront::geometricVertex(int vertexIndex)
 {
     assert(vertexIndex < fGeometricVertices.size() && vertexIndex >= 0);
     return fGeometricVertices[vertexIndex];

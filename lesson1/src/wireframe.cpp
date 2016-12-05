@@ -15,8 +15,8 @@ int main()
         std::vector<int> face = wf.faceGeometricVertices(i);
         for (int j(0); j < face.size(); ++j)
         { 
-            Vec3f v0 = wf.geometricVertex(face[j]); 
-            Vec3f v1 = wf.geometricVertex(face[(j+1)%face.size()]);
+            datatypes::Vec3f v0 = wf.geometricVertex(face[j]); 
+            datatypes::Vec3f v1 = wf.geometricVertex(face[(j+1)%face.size()]);
             
             // Each vertex xyz is between -1,1, so we need to add 1 to shift it
             // between 0,2. We later divide by 2 to change range to 0,1
