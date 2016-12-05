@@ -6,7 +6,7 @@
 
 namespace tinyrenderer
 {
-    void triangle(const datatypes::Vec2i& t0, const datatypes::Vec2i& t1, const datatypes::Vec2i& t2, TGAImage &image, const TGAColor& color);
+    void triangle(datatypes::Vec2i& t0, datatypes::Vec2i& t1, datatypes::Vec2i& t2, TGAImage &image, const TGAColor& color);
 }
 
 #endif
