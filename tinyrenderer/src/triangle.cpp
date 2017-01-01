@@ -1,56 +1,63 @@
 #include "tinyrenderer/line.hpp"
 #include "tinyrenderer/triangle.hpp"
 
-void tinyrenderer::triangle(datatypes::Vec2i& t0, datatypes::Vec2i& t1, datatypes::Vec2i& t2, TGAImage &image, const TGAColor& color)
+#include <cmath>
+
+namespace
+{ 
+    float dot(const datatypes::Vec3f& v1, const datatypes::Vec3f& v2)
+    {
+        return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+    }
+    
+    bool isPointInTriangle(const std::array<datatypes::Vec2i,3>& vertices, const datatypes::Vec2i& P)
+    {
+        // uses barycentric coordinates to check whether P is in triangle
+        datatypes::Vec3f v0(vertices[1].x - vertices[0].x, vertices[1].y - vertices[0].y, 0);
+        datatypes::Vec3f v1(vertices[2].x - vertices[0].x, vertices[2].y - vertices[0].y, 0);
+        datatypes::Vec3f v2(P.x - vertices[0].x, P.y - vertices[0].y, 0);
+        float d00 = dot(v0, v0);
+        float d01 = dot(v0, v1);
+        float d02 = dot(v0, v2);
+        float d11 = dot(v1, v1);
+        float d12 = dot(v1, v2);
+        float denom = d00 * d11 - d01 * d01;
+        float u = (d11 * d02 - d01 * d12) / denom;
+        float v = (d00 * d12 - d01 * d02) / denom;
+        return (u >= 0) && (v >= 0) && (u + v < 1);
+    }
+}
+
+void tinyrenderer::triangle(const datatypes::Vec2i& t0, const datatypes::Vec2i& t1, const datatypes::Vec2i& t2, TGAImage &image, const TGAColor& color)
 {
-    // sort vertices by y in ascending order
-    if (t0.y > t1.y)
-    {
-        std::swap(t0, t1);
-    }
-    if (t0.y > t2.y)
-    {
-        std::swap(t0, t2);
-    }
-    if (t1.y > t2.y)
-    {
-        std::swap(t1, t2);
-    }
+    std::array<datatypes::Vec2i, 3> vertices = {t0, t1, t2};
+    triangle(vertices, image, color);
+}
+
+void tinyrenderer::triangle(const std::array<datatypes::Vec2i,3>& vertices, TGAImage &image, const TGAColor& color)
+{
+    // get bounding box of triangle
+    datatypes::Vec2i bboxmin(vertices[0]);
+    bboxmin.x = std::min(bboxmin.x, vertices[1].x);
+    bboxmin.x = std::min(bboxmin.x, vertices[2].x);
+    bboxmin.y = std::min(bboxmin.y, vertices[1].y);
+    bboxmin.y = std::min(bboxmin.y, vertices[2].y);
+    datatypes::Vec2i bboxmax(vertices[0]);
+    bboxmax.x = std::max(bboxmax.x, vertices[1].x);
+    bboxmax.x = std::max(bboxmax.x, vertices[2].x);
+    bboxmax.y = std::max(bboxmax.y, vertices[1].y);
+    bboxmax.y = std::max(bboxmax.y, vertices[2].y);
     
-    //line(t0, t1, image, color);
-    //line(t1, t2, image, color);
-    //line(t2, t0, image, color);
-    
-    auto lineSweeper = [&image, &color](float lx, float ldx, float rx, float rdx, int y0, int height)
+    // check each point in bounding box to see if it is in triangle
+    datatypes::Vec2i P;
+    for(P.x = bboxmin.x; P.x <= bboxmax.x; ++P.x)
     {
-        for(int y = y0; y < y0 + height; ++y)
+        for(P.y = bboxmin.y; P.y <= bboxmax.y; ++P.y)
         {
-            lx += ldx;
-            rx += rdx;
-            line(lx, y, rx, y, image, color);
+            if (isPointInTriangle(vertices, P))
+            {
+                image.set(P.x, P.y, color);
+            }
         }
-    };
-    
-    // draw segments t0 and t1 (line sweeping)
-    float ldx = 0;
-    if (t2.y - t0.y != 0)
-    {
-        ldx = (t2.x - t0.x) * 1. / (t2.y - t0.y); // left dx
     }
-    float rdx = 0;
-    if (t1.y - t0.y != 0)
-    {
-        rdx = (t1.x - t0.x) * 1. / (t1.y - t0.y); // right dx
-    }
-    lineSweeper(t0.x, ldx, t0.x, rdx, t0.y, t1.y - t0.y);
-    
-    // draw segments t1 and t2 (line sweeping)
-    rdx = 0; // recalc rdx to be from t1 to t2 (ldx is already from t0 to t2)
-    if (t2.y - t1.y != 0)
-    {
-        rdx = (t2.x - t1.x) * 1. / (t2.y - t1.y); // right dx
-    }
-    int lx = ldx * (t1.y - t0.y) + t0.x;
-    int rx = t1.x;
-    lineSweeper(lx, ldx, rx, rdx, t1.y, t2.y - t1.y);
 }
